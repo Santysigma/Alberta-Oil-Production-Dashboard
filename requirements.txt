@@ -4,6 +4,7 @@ attrs==26.1.0
 certifi==2026.7.22
 charset-normalizer==3.5.2
 click==8.5.0
+et_xmlfile==2.0.0
 h11==0.16.0
 httptools==0.8.0
 idna==3.20
@@ -14,6 +15,7 @@ jsonschema-specifications==2025.9.1
 MarkupSafe==3.0.4
 narwhals==2.26.0
 numpy==2.5.3
+openpyxl==3.1.5
 packaging==26.3
 pandas==3.0.6
 pillow==12.3.0
