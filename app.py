@@ -86,3 +86,39 @@ table = yearly[
     }
 )
 st.dataframe(table.round(1), hide_index=True)
+# ---------- Feature 3: findings ----------
+st.header("Three findings")
+
+st.markdown(
+    """
+**1. Production grew about 30% from 2017 to 2025.**
+Average daily production rose from 506 to 659 thousand m³ per day. It increased in every year except 2020, and growth was weak in 2019 (+0.9%).
+
+**2. The 2020 drop was sharp but short, and mostly came from oil sands.**
+2020 averaged 530 thousand m³ per day, 5.1% below 2019. Between February and May 2020, daily production fell by about 122 thousand m³: roughly 76% from oil sands, 23% from conventional crude, and 1% from condensate. Production was above 2019 levels again in 2021. The AER data does not state a cause.
+
+**3. Oil sands make up about 84% of production, and that share barely changed.**
+The oil sands share stayed between 83% and 86% every year, so most of the growth since 2017 (roughly 85%) came from oil sands simply because they are most of the total.
+"""
+)
+
+# ---------- Feature 4: source and methods ----------
+st.header("Source and methods")
+
+st.markdown(
+    """
+**Source.** Alberta Energy Regulator (AER), *ST3: Alberta Energy Resource Industries Monthly Statistics*, "Oil" supply and disposition files, 2017 to 2025.
+
+**What is measured.** "Crude oil and equivalent": conventional crude oil, condensate, and oil sands production (bitumen and upgraded synthetic crude), using AER's "Total Production" row.
+
+**Units.** Cubic metres (m³). Monthly values are monthly totals. Yearly totals are the sum of the 12 months. Average per day is the total divided by the number of days (monthly: days in that month; yearly: 365, or 366 in 2020 and 2024). Averaging the 12 monthly values would be wrong, because months have different lengths.
+
+**Missing values and checks.** The final table has 108 months (nine years × 12), with no missing values and no duplicate months. For every year, the sum of the 12 months matches AER's own year-to-date total, and conventional crude + condensate + oil sands equals total production in every month.
+
+**Limitations.**
+- Nine years of data, not ten, because the 2016 file was not available on the AER page.
+- AER may amend earlier numbers in later releases, so figures can differ from other published versions.
+- AER renamed some rows between years, so the loader checks each known label.
+- The data shows what changed, not why.
+"""
+)
