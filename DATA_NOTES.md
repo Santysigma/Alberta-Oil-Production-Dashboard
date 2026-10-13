@@ -19,3 +19,7 @@
 - "Sent for Further Processing" is stored as a negative number, so use Total Production instead of adding the pieces.
 - The "Removals from Alberta" per-day row is a different measure and is not used.
 - Later AER releases may amend earlier numbers.
+
+**Observation:** April 2017 has the lowest daily average production in the dataset (about 442,500 m3/day). Between February and April 2017, oil sands production fell by about 1.7 million m3 per month while condensate and conventional crude stayed roughly flat, so the spring 2017 dip is an oil sands effect. The cause is not stated in the AER file.
+
+**Label differences:** the "Total Crude Oil Production" label is not present in the 2017 file under that name, so breakdown rows need per-year label checks. "Total Production" is present in all nine files and is used for the main series.
