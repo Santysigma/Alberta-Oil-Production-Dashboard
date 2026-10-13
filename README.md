@@ -27,4 +27,14 @@ streamlit run app.py
 - `app.py`: the Streamlit dashboard
 - `chart.py`: early chart experiments
 - `DATA_NOTES.md`: source, units, checks, and limitations
-- `Data/`: the downloaded AER files and the cleaned CSV
+- `Data/`: the downloaded AER files and the cleaned 
+
+## Start the app (after setup) (Personal Note)
+
+```bash
+cd alberta-oil-production-dashboard
+source .venv/bin/activate
+streamlit run app.py
+```
+
+The dashboard opens at http://localhost:8501. Press Ctrl+C in the terminal to stop it.
