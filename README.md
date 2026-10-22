@@ -32,7 +32,7 @@ streamlit run app.py
 ## Start the app (after setup) (Personal Note)
 
 ```bash
-cd alberta-oil-production-dashboard
+cd ~/Documents/alberta-oil-production-dashboard
 source .venv/bin/activate
 streamlit run app.py
 ```
