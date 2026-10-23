@@ -9,6 +9,10 @@ st.set_page_config(page_title="Alberta Oil Production", layout="wide")
 def load_data():
     return pd.read_csv("Data/clean_monthly_production.csv", parse_dates=["date"])
 
+st.caption(
+    "1 m³ of oil is about 6.29 barrels. "
+    "'Crude oil and equivalent' includes conventional crude, condensate, and oil sands."
+)
 
 monthly = load_data()
 
