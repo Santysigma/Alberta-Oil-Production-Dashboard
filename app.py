@@ -1,8 +1,12 @@
+from datetime import datetime
+
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 
 st.set_page_config(page_title="Alberta Oil Production", layout="wide")
+
+M3_TO_BARRELS = 6.29
 
 
 @st.cache_data
@@ -11,13 +15,20 @@ def load_data():
 
 
 monthly = load_data()
+FIRST = monthly["date"].min().to_pydatetime()
+LAST = monthly["date"].max().to_pydatetime()
+LAST_3Y_START = (pd.Timestamp(LAST) - pd.DateOffset(months=35)).to_pydatetime()
+
+
+def set_range(start, end):
+    st.session_state["date_range"] = (start, end)
+
 
 st.title("Alberta Oil Production Dashboard")
 st.write(
     "Monthly crude oil and equivalent production in Alberta, 2017 to 2025. "
     "Source: Alberta Energy Regulator, ST3 monthly statistics."
 )
-
 st.caption(
     "1 m³ of oil is about 6.29 barrels. "
     "'Crude oil and equivalent' includes conventional crude, condensate, and oil sands."
@@ -25,36 +36,96 @@ st.caption(
 
 # ---------- Feature 1: monthly graph with date-range selector ----------
 st.header("Monthly production")
+st.write(
+    "Pick a range with the buttons, or drag the **left handle** (start month) "
+    "and the **right handle** (end month) of the slider."
+)
+
+b1, b2, b3, b4 = st.columns(4)
+b1.button("All years", on_click=set_range, args=(FIRST, LAST))
+b2.button("Last 3 years", on_click=set_range, args=(LAST_3Y_START, LAST))
+b3.button("2020 only", on_click=set_range, args=(datetime(2020, 1, 1), datetime(2020, 12, 1)))
+b4.button("Spring 2017 dip", on_click=set_range, args=(datetime(2017, 1, 1), datetime(2017, 8, 1)))
 
 start, end = st.slider(
-    "Select a date range",
-    min_value=monthly["date"].min().to_pydatetime(),
-    max_value=monthly["date"].max().to_pydatetime(),
-    value=(
-        monthly["date"].min().to_pydatetime(),
-        monthly["date"].max().to_pydatetime(),
-    ),
+    "Date range (drag either end)",
+    min_value=FIRST,
+    max_value=LAST,
+    value=(FIRST, LAST),
+    key="date_range",
     format="MMM YYYY",
+    help="Move the left handle to set the start month and the right handle to set the end month.",
 )
 
-measure = st.radio(
-    "Measure",
-    ["Monthly total (million m³ per month)", "Average per day (thousand m³ per day)"],
-    horizontal=True,
+start_month = pd.Timestamp(start.year, start.month, 1)
+view = monthly[(monthly["date"] >= start_month) & (monthly["date"] <= end)].copy()
+st.caption(f"Showing {start_month:%b %Y} to {end:%b %Y} ({len(view)} months)")
+
+# Summary numbers for the selected range
+avg_k = view["production_m3"].sum() / view["days_in_month"].sum() / 1e3
+hi = view.loc[view["avg_daily_m3"].idxmax()]
+lo = view.loc[view["avg_daily_m3"].idxmin()]
+
+c1, c2, c3 = st.columns(3)
+c1.metric(
+    "Average per day",
+    f"{avg_k:,.0f} thousand m³",
+    help=f"About {avg_k * M3_TO_BARRELS:,.0f} thousand barrels per day",
 )
+c2.metric("Highest month", f"{hi['date']:%b %Y}", f"{hi['avg_daily_m3'] / 1e3:,.0f} thousand m³/day", delta_color="off")
+c3.metric("Lowest month", f"{lo['date']:%b %Y}", f"{lo['avg_daily_m3'] / 1e3:,.0f} thousand m³/day", delta_color="off")
 
-view = monthly[(monthly["date"] >= start) & (monthly["date"] <= end)].copy()
+tab_total, tab_source = st.tabs(["Total production", "By source"])
 
-if measure.startswith("Monthly total"):
-    view["value"] = view["production_m3"] / 1e6
-    y_label = "Million m³ per month"
-else:
-    view["value"] = view["avg_daily_m3"] / 1e3
-    y_label = "Thousand m³ per day"
+with tab_total:
+    measure = st.radio(
+        "Measure",
+        ["Monthly total (million m³ per month)", "Average per day (thousand m³ per day)"],
+        horizontal=True,
+    )
+    plot = view.copy()
+    if measure.startswith("Monthly total"):
+        plot["value"] = plot["production_m3"] / 1e6
+        y_label = "Million m³ per month"
+    else:
+        plot["value"] = plot["avg_daily_m3"] / 1e3
+        y_label = "Thousand m³ per day"
 
-fig = px.line(view, x="date", y="value", labels={"date": "Month", "value": y_label})
-fig.update_traces(hovertemplate="%{x|%b %Y}: %{y:.1f}")
-st.plotly_chart(fig)
+    fig = px.line(plot, x="date", y="value", labels={"date": "Month", "value": y_label})
+    fig.update_traces(hovertemplate="%{x|%b %Y}: %{y:.1f}")
+    st.plotly_chart(fig)
+
+with tab_source:
+    st.write("Average production per day, split by source.")
+    parts = view.melt(
+        id_vars=["date", "days_in_month"],
+        value_vars=["conventional_m3", "condensate_m3", "oil_sands_m3"],
+        var_name="source",
+        value_name="m3",
+    )
+    parts["thousand_m3_per_day"] = parts["m3"] / parts["days_in_month"] / 1e3
+    parts["source"] = parts["source"].map(
+        {
+            "conventional_m3": "Conventional crude",
+            "condensate_m3": "Condensate",
+            "oil_sands_m3": "Oil sands",
+        }
+    )
+    fig_src = px.area(
+        parts,
+        x="date",
+        y="thousand_m3_per_day",
+        color="source",
+        labels={"date": "Month", "thousand_m3_per_day": "Thousand m³ per day", "source": "Source"},
+    )
+    st.plotly_chart(fig_src)
+
+st.download_button(
+    "Download the selected months (CSV)",
+    view.to_csv(index=False),
+    file_name="alberta_oil_selected_months.csv",
+    mime="text/csv",
+)
 
 # ---------- Feature 2: yearly summary ----------
 st.header("Yearly summary")
@@ -91,6 +162,7 @@ table = yearly[
     }
 )
 st.dataframe(table.round(1), hide_index=True)
+
 # ---------- Feature 3: findings ----------
 st.header("Three findings")
 
@@ -116,7 +188,7 @@ st.markdown(
 
 **What is measured.** "Crude oil and equivalent": conventional crude oil, condensate, and oil sands production (bitumen and upgraded synthetic crude), using AER's "Total Production" row.
 
-**Units.** Cubic metres (m³). Monthly values are monthly totals. Yearly totals are the sum of the 12 months. Average per day is the total divided by the number of days (monthly: days in that month; yearly: 365, or 366 in 2020 and 2024). Averaging the 12 monthly values would be wrong, because months have different lengths.
+**Units.** Cubic metres (m³). 1 m³ is about 6.29 barrels. Monthly values are monthly totals. Yearly totals are the sum of the 12 months. Average per day is the total divided by the number of days (monthly: days in that month; yearly: 365, or 366 in 2020 and 2024). Averaging the 12 monthly values would be wrong, because months have different lengths.
 
 **Missing values and checks.** The final table has 108 months (nine years × 12), with no missing values and no duplicate months. For every year, the sum of the 12 months matches AER's own year-to-date total, and conventional crude + condensate + oil sands equals total production in every month.
 
