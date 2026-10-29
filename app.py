@@ -72,8 +72,10 @@ c1.metric(
     f"{avg_k:,.0f} thousand m³",
     help=f"About {avg_k * M3_TO_BARRELS:,.0f} thousand barrels per day",
 )
-c2.metric("Highest month", f"{hi['date']:%b %Y}", f"{hi['avg_daily_m3'] / 1e3:,.0f} thousand m³/day", delta_color="off")
-c3.metric("Lowest month", f"{lo['date']:%b %Y}", f"{lo['avg_daily_m3'] / 1e3:,.0f} thousand m³/day", delta_color="off")
+c2.metric("Highest month", f"{hi['date']:%b %Y}")
+c2.caption(f"{hi['avg_daily_m3'] / 1e3:,.0f} thousand m³ per day")
+c3.metric("Lowest month", f"{lo['date']:%b %Y}")
+c3.caption(f"{lo['avg_daily_m3'] / 1e3:,.0f} thousand m³ per day")
 
 tab_total, tab_source = st.tabs(["Total production", "By source"])
 
@@ -161,7 +163,15 @@ table = yearly[
         "change_vs_prev_year_pct": "Change vs previous year (%)",
     }
 )
-st.dataframe(table.round(1), hide_index=True)
+st.dataframe(
+    table.round(1),
+    hide_index=True,
+    column_config={
+        "Total (million m³)": st.column_config.NumberColumn(format="%.1f"),
+        "Average per day (thousand m³)": st.column_config.NumberColumn(format="%.1f"),
+        "Change vs previous year (%)": st.column_config.NumberColumn(format="%.1f"),
+    },
+)
 
 # ---------- Feature 3: findings ----------
 st.header("Three findings")
