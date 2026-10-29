@@ -1,12 +1,10 @@
 # Alberta Oil Production Dashboard
 
-An interactive dashboard exploring ten years of Alberta oil production using public data, with clear graphs, documented methods, and an explanation of the findings.
+**Live dashboard:** https://alberta-oil-dashboard.streamlit.app
 
-## Try it
-No install needed. Open the live dashboard: https://alberta-oil-dashboard.streamlit.app
-
-To run it on your own machine instead, see "Run it locally" below.
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://alberta-oil-dashboard.streamlit.app)
+
+An interactive dashboard exploring ten years of Alberta oil production using public data, with clear graphs, documented methods, and an explanation of the findings.
 
 ## What it shows
 - Monthly production with a date-range slider, quick-range buttons, and a split by source
@@ -37,6 +35,11 @@ Alberta Energy Regulator, ST3 Alberta Energy Resource Industries Monthly Statist
 
 ## Tools
 Python, pandas, Plotly, Streamlit.
+
+## Try it
+No install needed. Open the live dashboard: https://alberta-oil-dashboard.streamlit.app
+
+To run it on your own machine instead, see "Run it locally" below.
 
 ## Run it locally
 ```bash
